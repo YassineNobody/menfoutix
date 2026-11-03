@@ -1,0 +1,27 @@
+.modal-overlay[data-state="open"] {
+  animation: modal-fade-in 160ms ease-out;
+}
+.modal-overlay[data-state="closed"] {
+  animation: modal-fade-out 120ms ease-in;
+}
+.modal-content[data-state="open"] {
+  animation: modal-enter 180ms ease-out;
+}
+.modal-content[data-state="closed"] {
+  animation: modal-fade-out 120ms ease-in;
+}
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modal-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes modal-enter {
+  from { opacity: 0; scale: .97; }
+  to { opacity: 1; scale: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay, .modal-content { animation: none !important; }
+}
