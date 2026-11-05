@@ -53,3 +53,5 @@ export default async function MoviePage({ params, searchParams }: Props) {
     </div>
   );
 }
+
+export const metadata = { title: "MenFouTix" };

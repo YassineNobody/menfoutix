@@ -40,3 +40,5 @@ export default async function SeriesGenrePage({ params, searchParams }: Props) {
     </div>
   );
 }
+
+export const metadata = { title: "MenFouTix" };

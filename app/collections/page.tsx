@@ -69,7 +69,7 @@ export default async function CollectionsPage({ searchParams }: Props) {
         </div>
 
         {result.data.length > 0 ? (
-          <div className="flex flex-wrap gap-6">
+          <div className="flex flex-wrap justify-center gap-6">
             {result.data.map((collection) => (
               <CollectionCard key={collection.id} collection={collection} variant="grid" />
             ))}

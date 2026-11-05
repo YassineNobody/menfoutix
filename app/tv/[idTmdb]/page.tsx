@@ -6,6 +6,7 @@ interface Props {
   params: Promise<{ idTmdb: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
+export const metadata = { title: "MenFouTix" };
 
 export default async function SeriesPage({ params, searchParams }: Props) {
   const [{ idTmdb }, query] = await Promise.all([params, searchParams]);

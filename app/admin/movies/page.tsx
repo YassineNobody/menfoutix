@@ -16,3 +16,5 @@ export default function Home({ searchParams }: {
     </AdminShell>
   );
 }
+
+export const metadata = { title: "MenFouTix" };

@@ -57,3 +57,5 @@ export default async function WatchSeriesPage({ params }: Props) {
       : <div role="status" className="flex h-full flex-col items-center justify-center gap-3 px-6 pt-28 text-center"><h1 className="text-lg font-semibold">{current.title}</h1><p className="text-zinc-400">This episode is not available yet.</p><p className="text-sm text-zinc-500">Choose another episode from the menu above.</p></div>}
   </div>;
 }
+
+export const metadata = { title: "MenFouTix" };

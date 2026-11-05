@@ -9,6 +9,8 @@ interface Props {
   params: Promise<{ idTmdb: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
+export const metadata = { title: "MenFouTix" };
+
 
 export default async function CollectionPage({ params, searchParams }: Props) {
   const [{ idTmdb }] = await Promise.all([params, searchParams]);

@@ -95,3 +95,5 @@ export default async function WatchMoviePage({ params, searchParams }: Props) {
     </div>
   );
 }
+
+export const metadata = { title: "MenFouTix" };

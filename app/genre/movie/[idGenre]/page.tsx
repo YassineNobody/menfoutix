@@ -54,3 +54,5 @@ export default async function GenreMoviesPage({ params, searchParams }: Props) {
     </div>
   );
 }
+
+export const metadata = { title: "MenFouTix" };
