@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useTransition } from "react";
+import type { CatalogueType } from "./film-types";
 import { useRouter } from "next/navigation";
 
-type Props = { search: string; limit: number };
+type Props = { search: string; limit: number; type?: CatalogueType };
 
-export function FilmSearchControls({ search, limit }: Props) {
+export function FilmSearchControls({ search, limit, type = "film" }: Props) {
   const router = useRouter();
+  const isSeries = type === "série";
+  const path = isSeries ? "/admin/series" : "/admin/movies";
+  const anchor = isSeries ? "series" : "films";
   const input = useRef<HTMLInputElement>(null);
   const select = useRef<HTMLSelectElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -28,23 +32,23 @@ export function FilmSearchControls({ search, limit }: Props) {
     const query = new URLSearchParams({ page: "1", limit: select.current?.value ?? String(limit) });
     const value = input.current?.value.trim() ?? "";
     if (value) query.set("q", value);
-    startTransition(() => router.replace(`/admin/movies?${query.toString()}#films`, { scroll: false }));
+    startTransition(() => router.replace(`${path}?${query.toString()}#${anchor}`, { scroll: false }));
   }
 
   return (
     <form className="page-size-form catalogue-search-form" role="search" onSubmit={(event) => { event.preventDefault(); updateSearch(); }}>
       <label className="search-box catalogue-search">
         <span aria-hidden="true">⌕</span>
-        <span className="sr-only">Rechercher un film dans le catalogue</span>
-        <input ref={input} type="text" inputMode="search" name="q" placeholder="Rechercher un film…" defaultValue={search}
+        <span className="sr-only">{isSeries ? "Rechercher une série dans le catalogue" : "Rechercher un film dans le catalogue"}</span>
+        <input ref={input} type="text" inputMode="search" name="q" placeholder={isSeries ? "Rechercher une série…" : "Rechercher un film…"} defaultValue={search}
           onChange={() => {
             if (timer.current) clearTimeout(timer.current);
             timer.current = setTimeout(updateSearch, 300);
           }} />
       </label>
       <div className="page-size-controls">
-        <label htmlFor="films-limit">Films par page</label>
-        <select ref={select} id="films-limit" defaultValue={limit} onChange={updateSearch}>
+        <label htmlFor={`${anchor}-limit`}>{isSeries ? "Séries" : "Films"} par page</label>
+        <select ref={select} id={`${anchor}-limit`} defaultValue={limit} onChange={updateSearch}>
           {[10, 25, 50].map((size) => <option key={size} value={size}>{size}</option>)}
         </select>
       </div>

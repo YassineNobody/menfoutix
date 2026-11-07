@@ -1,13 +1,15 @@
+import { catalogueText, type CatalogueVersion } from "@/lib/catalogue";
 import { CollectionDetails } from "@/types/collections/collections";
 import type { ReactNode } from "react";
 import { CollectionImage } from "../CollectionImage";
 import { Calendar, Info, Star } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/Catalogue/CatalogueLink";
 
 interface Props {
   collection: CollectionDetails;
+  version?: CatalogueVersion;
 }
-export function CollectionGrid({ collection }: Props) {
+export function CollectionGrid({ collection, version = "VO" }: Props) {
   if (collection.movies.length === 0) {
     return <p>Aucun film dans cette collection.</p>;
   }
@@ -17,12 +19,12 @@ export function CollectionGrid({ collection }: Props) {
       {collection.movies.map((element) => (
         <div key={element.id} className="">
           <div className="bg-white/[0.03] rounded-xl overflow-hidden border border-white/10 hover:border-red-500/30 transition-all duration-300 group cursor-pointer hover:bg-white/[0.06]">
-            <MovieLink tmdbId={element.tmdbId} available={element.vo}>
+            <MovieLink tmdbId={element.tmdbId} available={version === "VF" ? element.vf : element.vo}>
               <div className="relative">
                 <CollectionImage
                   key={element.posterUrl || "missing"}
                   src={element.posterUrl}
-                  alt={element.titleEn || element.titleFr || element.originalTitle || "Sans titre"}
+                  alt={catalogueText(version, element.titleFr, element.titleEn, element.originalTitle || "Sans titre")}
                   className="w-full h-96 object-cover"
                 />
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
@@ -44,7 +46,7 @@ export function CollectionGrid({ collection }: Props) {
               </div>
               <div className="p-3">
                 <h3 className="text-lg font-semibold mb-2 line-clamp-2">
-                  {element.titleEn || element.titleFr || element.originalTitle || "Sans titre"}
+                  {catalogueText(version, element.titleFr, element.titleEn, element.originalTitle || "Sans titre")}
                 </h3>
                 {element.releaseYear !== null && (
                 <div className="flex items-center gap-2 text-sm text-gray-400 mb-3">
@@ -52,9 +54,9 @@ export function CollectionGrid({ collection }: Props) {
                   <span>{element.releaseYear}</span>
                 </div>
                 )}
-                {(element.synopsisEn || element.synopsisFr) && (
+                {(catalogueText(version, element.synopsisFr, element.synopsisEn)) && (
                 <p className="text-gray-400 text-sm line-clamp-3">
-                  {element.synopsisEn || element.synopsisFr}
+                  {catalogueText(version, element.synopsisFr, element.synopsisEn)}
                 </p>
                 )}
               </div>
@@ -74,6 +76,6 @@ function MovieLink({ tmdbId, available, children }: {
   return available ? (
     <Link href={`/movie/${tmdbId}`} className="block">{children}</Link>
   ) : (
-    <div className="block" aria-label="Film indisponible en VO">{children}</div>
+    <div className="block" aria-label="Film unavailable in this version">{children}</div>
   );
 }

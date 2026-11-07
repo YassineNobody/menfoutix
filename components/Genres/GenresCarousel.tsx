@@ -1,4 +1,5 @@
-import Link from "next/link";
+import type { CatalogueVersion } from "@/lib/catalogue";
+import Link from "@/components/Catalogue/CatalogueLink";
 
 import { getGenres } from "@/lib/services/genre";
 import type { WorkType } from "@/types/work/work";
@@ -6,12 +7,14 @@ import { HorizontalCarousel } from "../Carousel/HorizontalCarousel";
 
 interface Props {
   workType?: WorkType;
+  version?: CatalogueVersion;
 }
 
 export function GenresCarousel({
   workType = "film",
+  version = "VO",
 }: Props) {
-  const genres = getGenres(workType);
+  const genres = getGenres(workType, version);
   const routeType = workType === "film" ? "movie" : "tv";
 
   return (

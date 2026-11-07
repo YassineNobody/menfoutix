@@ -1,3 +1,4 @@
+import { versionSql, type CatalogueVersion } from "@/lib/catalogue";
 import "server-only";
 
 import { db } from "../server/database";
@@ -7,6 +8,7 @@ import { WorkType } from "@/types/work/work";
 
 export function getGenres(
   type: WorkType,
+  version: CatalogueVersion = "VO",
 ): GenreWithBackdrop[] {
   if (type !== "film" && type !== "série") {
     throw new Error("Type d’œuvre invalide.");
@@ -29,7 +31,7 @@ export function getGenres(
             SELECT 1
             FROM videos AS v
             WHERE v.work_id = w.id
-              AND v.version = 'VO'
+              AND v.version = ${versionSql(version)}
           )
 
         ORDER BY w.id DESC
@@ -49,7 +51,7 @@ export function getGenres(
           SELECT 1
           FROM videos AS v
           WHERE v.work_id = w.id
-            AND v.version = 'VO'
+            AND v.version = ${versionSql(version)}
         )
     )
 

@@ -1,3 +1,4 @@
+import { localizedTextSql, versionSql, type CatalogueVersion } from "@/lib/catalogue";
 import "server-only";
 
 import { db, normalizeSearch } from "@/lib/server/database";
@@ -19,21 +20,21 @@ export interface SearchFilters {
 }
 export interface SearchChoice { id: number; name: string }
 export interface SearchFacets { genres: SearchChoice[]; actors: SearchChoice[] }
-const SORT_SQL: Record<SearchSort, string> = {
-  title: "COALESCE(NULLIF(w.title_en,''),NULLIF(w.original_title,''),w.title_fr) COLLATE NOCASE,w.id",
-  recentlyAdded: "(SELECT MAX(v.published_at) FROM videos v WHERE v.work_id=w.id AND v.version='VO') DESC,w.id DESC",
+const SORT_SQL = (version: CatalogueVersion): Record<SearchSort, string> => ({
+  title: `${localizedTextSql(version, "w.title_fr", "w.title_en", "w.original_title")} COLLATE NOCASE, w.id`,
+  recentlyAdded: `(SELECT MAX(v.published_at) FROM videos v WHERE v.work_id=w.id AND v.version=${versionSql(version)}) DESC,w.id DESC`,
   releaseDate: "w.release_date DESC,w.id DESC",
   tmdbRating: "w.tmdb_vote_average DESC,w.id DESC",
   ourRating: "w.note DESC,w.id DESC",
-};
-const VO = "EXISTS(SELECT 1 FROM videos v WHERE v.work_id=w.id AND v.version='VO')";
+});
+const scope = (version: CatalogueVersion) => `EXISTS(SELECT 1 FROM videos v WHERE v.work_id=w.id AND v.version=${versionSql(version)})`;
 
-export function searchWorks(filters: SearchFilters = {}, page = 1, limit = 20): PaginatedResult<WorkListItemResponse> {
+export function searchWorks(filters: SearchFilters = {}, page = 1, limit = 20, version: CatalogueVersion = "VO"): PaginatedResult<WorkListItemResponse> {
   if (!Number.isSafeInteger(page) || page < 1) throw new Error("Invalid page.");
   if (!Number.isSafeInteger(limit) || limit < 1) throw new Error("Invalid limit.");
   const sort = filters.sort ?? "title";
-  if (!Object.hasOwn(SORT_SQL, sort)) throw new Error("Invalid sort.");
-  const where = [VO];
+  if (!Object.hasOwn(SORT_SQL(version), sort)) throw new Error("Invalid sort.");
+  const where = [scope(version)];
   const values: (string | number)[] = [];
   const query = filters.q?.trim();
   if (query) {
@@ -73,31 +74,31 @@ export function searchWorks(filters: SearchFilters = {}, page = 1, limit = 20): 
   const totalPages = Math.ceil(total / limit);
   page = Math.min(page, Math.max(1, totalPages));
   const rows = db.prepare(`SELECT w.tmdb_id AS tmdbId,w.type,w.title_fr AS titleFr,
-    COALESCE(NULLIF(w.title_en,''),NULLIF(w.original_title,''),w.title_fr) AS displayTitle,
+    ${localizedTextSql(version, "w.title_fr", "w.title_en", "w.original_title")} AS displayTitle,
     w.title_en AS titleEn,w.original_title AS originalTitle,w.local_title AS localTitle,
-    w.release_date AS releaseDate,COALESCE(NULLIF(w.synopsis_en,''),w.synopsis_fr) AS synopsis,
+    w.release_date AS releaseDate,${localizedTextSql(version, "w.synopsis_fr", "w.synopsis_en")} AS synopsis,
     w.poster_url AS posterUrl,w.backdrop_url AS backdropUrl,w.logo_url AS logoUrl,
     w.tmdb_vote_average AS tmdbRating,w.note AS ourRating,
     (SELECT json_group_array(name) FROM (
       SELECT DISTINCT g.name FROM genres g JOIN work_genres wg ON wg.genre_id=g.id
       WHERE wg.work_id=w.id AND g.name IS NOT NULL ORDER BY g.name
     )) AS genresJson
-    FROM works w WHERE ${condition} ORDER BY ${SORT_SQL[sort]} LIMIT ? OFFSET ?
+    FROM works w WHERE ${condition} ORDER BY ${SORT_SQL(version)[sort]} LIMIT ? OFFSET ?
   `).all(...values, limit, (page - 1) * limit) as WorkRow[];
   return { data: rows.map(({ genresJson, ...work }) => ({ ...work, genres: JSON.parse(genresJson) as string[] })), page, limit, total, totalPages };
 }
 
 /** Seulement les genres et acteurs associés à une œuvre du catalogue VO. */
-export function getSearchFacets(): SearchFacets {
+export function getSearchFacets(version: CatalogueVersion = "VO"): SearchFacets {
   return {
     genres: db.prepare(`SELECT DISTINCT g.tmdb_genre_id AS id,g.name FROM genres g
       JOIN work_genres wg ON wg.genre_id=g.id JOIN works w ON w.id=wg.work_id
-      WHERE g.tmdb_genre_id IS NOT NULL AND ${VO} ORDER BY g.name COLLATE NOCASE`).all() as SearchChoice[],
+      WHERE g.tmdb_genre_id IS NOT NULL AND ${scope(version)} ORDER BY g.name COLLATE NOCASE`).all() as SearchChoice[],
     actors: db.prepare(`SELECT DISTINCT a.tmdb_person_id AS id,a.name
       FROM videos v
       JOIN work_actors wa ON wa.work_id=v.work_id
       JOIN actors a ON a.id=wa.actor_id
-      WHERE v.version='VO' AND a.tmdb_person_id IS NOT NULL
+      WHERE v.version=${versionSql(version)} AND a.tmdb_person_id IS NOT NULL
       ORDER BY a.name COLLATE NOCASE`).all() as SearchChoice[],
   };
 }

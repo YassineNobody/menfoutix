@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Catalogue/CatalogueLink";
 import { Check, Clock, Film, LockKeyhole, Play } from "lucide-react";
 import type { SeasonResponse, SeriesResponse } from "@/types/series/series";
 

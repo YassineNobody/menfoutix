@@ -3,6 +3,7 @@ import type { FilmRow, WorkVersion } from "./film-types";
 export type FilmAvailability = {
   id: number;
   titleFr: string;
+  titleEn: string | null;
   versions: Record<WorkVersion, { video: boolean; playlist: boolean }>;
 };
 
@@ -11,7 +12,7 @@ export function groupFilmAvailability(rows: FilmRow[]): FilmAvailability[] {
   for (const row of rows) {
     let film = films.get(row.id);
     if (!film) {
-      film = { id: row.id, titleFr: row.titleFr, versions: {
+      film = { id: row.id, titleFr: row.titleFr, titleEn: row.titleEn, versions: {
         VF: { video: false, playlist: false },
         VO: { video: false, playlist: false },
       } };

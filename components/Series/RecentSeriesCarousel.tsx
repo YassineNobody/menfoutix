@@ -1,9 +1,10 @@
+import type { CatalogueVersion } from "@/lib/catalogue";
 import { getRecentSeriesByRating } from "@/lib/services/recommandation";
 import { HorizontalCarousel } from "@/components/Carousel/HorizontalCarousel";
 import { MovieCard } from "@/components/Movie/MovieCard";
 
-export function RecentSeriesCarousel() {
-  const { data } = getRecentSeriesByRating(1, 20);
+export function RecentSeriesCarousel({ version = "VO" }: { version?: CatalogueVersion }) {
+  const { data } = getRecentSeriesByRating(1, 20, version);
   return (
     <HorizontalCarousel title="Recent series">
       {data.map((series) => (

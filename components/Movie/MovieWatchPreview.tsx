@@ -1,13 +1,14 @@
-import Link from "next/link";
+import { catalogueText, type CatalogueVersion } from "@/lib/catalogue";
+import Link from "@/components/Catalogue/CatalogueLink";
 import { Play } from "lucide-react";
 import type { MovieResponse } from "@/types/movies/movies";
-export function MovieWatchPreview({ movie }: {
-    movie: MovieResponse;
+export function MovieWatchPreview({ movie, version = "VO" }: {
+    movie: MovieResponse; version?: CatalogueVersion;
 }) {
     const video = movie.videos[0];
     if (!video)
         return null;
-    const title = movie.titleEn || movie.originalTitle || movie.titleFr;
+    const title = catalogueText(version, movie.titleFr, movie.titleEn, movie.originalTitle || "Untitled");
     const image = movie.backdropUrl || video.thumbnailUrl || movie.posterUrl;
     return (<section className="mt-12 w-full">
       <h2 className="mb-4 text-xl font-semibold text-white">

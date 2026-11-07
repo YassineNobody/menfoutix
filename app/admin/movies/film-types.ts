@@ -1,3 +1,5 @@
+export type CatalogueType = "film" | "série";
+
 export type WorkVersion = "VF" | "VO";
 
 export type VersionCount = {
@@ -8,12 +10,14 @@ export type VersionCount = {
 export type FilmPlaylist = {
   version: WorkVersion;
   titleFr: string;
+  titleEn: string | null;
   id: number;
 };
 
 export interface FilmRow {
   id: number;
   titleFr: string;
+  titleEn: string | null;
   version: WorkVersion | null;
   videoId: string | null;
   playlistId: string | null;

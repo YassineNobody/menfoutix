@@ -2,6 +2,8 @@
 
 import { Suspense } from "react";
 import { usePathname } from "next/navigation";
+import { CatalogueProvider } from "@/components/Catalogue/CatalogueProvider";
+import { versionFromPath } from "@/lib/catalogue";
 import { NavbarContent } from "./NavbarContent";
 
 function PublicNavbar() {
@@ -11,7 +13,7 @@ function PublicNavbar() {
     return null;
   }
 
-  return <NavbarContent />;
+  return <CatalogueProvider version={versionFromPath(pathname)}><NavbarContent key={versionFromPath(pathname)} /></CatalogueProvider>;
 }
 
 export function Navbar() {

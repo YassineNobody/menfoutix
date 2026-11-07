@@ -1,3 +1,4 @@
+import { localizedTextSql, versionSql, type CatalogueVersion } from "@/lib/catalogue";
 import { getEnglishMovieImages } from "@/lib/server/tmdb-images";
 import "server-only";
 
@@ -11,24 +12,25 @@ import { MetadataItem, MovieResponse, MovieRow, GenreResponse, ActorResponse, Vi
 
 export type MovieSort = "releaseDate" | "recentlyAdded";
 
-const MOVIE_SORT_SQL: Record<MovieSort, string> = {
+const MOVIE_SORT_SQL = (version: CatalogueVersion): Record<MovieSort, string> => ({
   releaseDate: "w.release_date DESC, w.id DESC",
 
   recentlyAdded: `
     (
       SELECT MAX(v.published_at)
       FROM videos AS v
-      WHERE v.work_id = w.id AND v.version = 'VO'
+      WHERE v.work_id = w.id AND v.version = ${versionSql(version)}
     ) DESC, w.id DESC
   `,
-};
+});
 
 export function getMovies(
   sort: MovieSort = "recentlyAdded",
   page: number = 1,
   limit: number = 10,
+  version: CatalogueVersion = "VO",
 ): PaginatedResult<WorkListItemResponse> {
-  if (!Object.hasOwn(MOVIE_SORT_SQL, sort)) {
+  if (!Object.hasOwn(MOVIE_SORT_SQL(version), sort)) {
     throw new Error("Tri invalide.");
   }
 
@@ -49,7 +51,7 @@ export function getMovies(
         AND EXISTS (
           SELECT 1
           FROM videos AS v
-          WHERE v.work_id = w.id AND v.version = 'VO'
+          WHERE v.work_id = w.id AND v.version = ${versionSql(version)}
         );
     `,
     )
@@ -69,12 +71,12 @@ export function getMovies(
         w.tmdb_id AS tmdbId,
         w.type,
         w.title_fr AS titleFr,
-        COALESCE(NULLIF(w.title_en,''),NULLIF(w.original_title,''),w.title_fr) AS displayTitle,
+        ${localizedTextSql(version, "w.title_fr", "w.title_en", "w.original_title")} AS displayTitle,
         w.title_en AS titleEn,
         w.original_title AS originalTitle,
         w.local_title AS localTitle,
         w.release_date AS releaseDate,
-        COALESCE(NULLIF(w.synopsis_en,''),w.synopsis_fr) AS synopsis,
+        ${localizedTextSql(version, "w.synopsis_fr", "w.synopsis_en")} AS synopsis,
         w.poster_url AS posterUrl,
         w.backdrop_url AS backdropUrl,
         w.logo_url AS logoUrl,
@@ -99,10 +101,10 @@ export function getMovies(
         AND EXISTS (
           SELECT 1
           FROM videos AS v
-          WHERE v.work_id = w.id AND v.version = 'VO'
+          WHERE v.work_id = w.id AND v.version = ${versionSql(version)}
         )
 
-      ORDER BY ${MOVIE_SORT_SQL[sort]}
+      ORDER BY ${MOVIE_SORT_SQL(version)[sort]}
       LIMIT ? OFFSET ?;
     `,
     )
@@ -149,7 +151,7 @@ function parseMetadata(
   });
 }
 
-export async function getOneMovie(tmdbId: number): Promise<MovieResponse | null> {
+export async function getOneMovie(tmdbId: number, version: CatalogueVersion = "VO"): Promise<MovieResponse | null> {
   if (!Number.isSafeInteger(tmdbId) || tmdbId < 1) {
     throw new Error("tmdbId doit être un entier positif.");
   }
@@ -185,7 +187,7 @@ export async function getOneMovie(tmdbId: number): Promise<MovieResponse | null>
     FROM works
     WHERE type = ?
       AND tmdb_id = ?
-      AND EXISTS (SELECT 1 FROM videos v WHERE v.work_id = works.id AND v.version = 'VO');
+      AND EXISTS (SELECT 1 FROM videos v WHERE v.work_id = works.id AND v.version = ${versionSql(version)});
   `;
 
   const sqlGenres = `
@@ -225,7 +227,7 @@ export async function getOneMovie(tmdbId: number): Promise<MovieResponse | null>
       channel_id AS channelId,
       channel_title AS channelTitle
     FROM videos
-    WHERE work_id = ? AND version = 'VO'
+    WHERE work_id = ? AND version = ${versionSql(version)}
     ORDER BY published_at DESC, video_id;
   `;
 
@@ -235,7 +237,7 @@ export async function getOneMovie(tmdbId: number): Promise<MovieResponse | null>
 
   if (!work) return null;
 
-  const englishImages = await getEnglishMovieImages(tmdbId);
+  const englishImages = version === "VO" ? await getEnglishMovieImages(tmdbId) : null;
 
   const genres = db
     .prepare(sqlGenres)
@@ -267,7 +269,9 @@ export async function getOneMovie(tmdbId: number): Promise<MovieResponse | null>
     ...movie,
     posterUrl: englishImages?.posterUrl || movie.posterUrl,
     logoUrl: englishImages?.logoUrl || movie.logoUrl,
-    synopsis: movie.synopsisEn || movie.synopsis,
+    synopsis: version === "VF"
+      ? movie.synopsis?.trim() || movie.synopsisEn?.trim() || null
+      : movie.synopsisEn?.trim() || movie.synopsis?.trim() || null,
 
     directors: parseMetadata(directorsJson, "directors"),
     productionCompanies: parseMetadata(

@@ -1,6 +1,9 @@
 "use client";
 
-import Link from "next/link";
+import { catalogueHref } from "@/lib/catalogue";
+import { useCatalogueVersion } from "@/components/Catalogue/CatalogueProvider";
+
+import Link from "@/components/Catalogue/CatalogueLink";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { ArrowRight, Film, LoaderCircle, Search, Tv2, X } from "lucide-react";
@@ -16,6 +19,7 @@ interface Results { query: string; items: Suggestion[]; total: number; error?: b
 
 export function NavbarSearch() {
   const router = useRouter();
+  const version = useCatalogueVersion();
   const id = useId();
   const root = useRef<HTMLDivElement>(null);
   const mobileInput = useRef<HTMLInputElement>(null);
@@ -34,7 +38,7 @@ export function NavbarSearch() {
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const response = await fetch(`/api/search/suggestions?${new URLSearchParams({ q: query })}`, { signal: controller.signal });
+        const response = await fetch(`/api/search/suggestions?${new URLSearchParams({ q: query, version })}`, { signal: controller.signal });
         if (!response.ok) throw new Error("Search failed");
         const data = await response.json() as Omit<Results, "query">;
         if (!controller.signal.aborted) setResults({ ...data, query });
@@ -43,7 +47,7 @@ export function NavbarSearch() {
       }
     }, 300);
     return () => { clearTimeout(timer); controller.abort(); };
-  }, [query, visible]);
+  }, [query, visible, version]);
 
   useEffect(() => {
     const outside = (event: PointerEvent) => {
@@ -56,7 +60,7 @@ export function NavbarSearch() {
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); close();
-    router.push(`/search${query ? `?${new URLSearchParams({ q: query })}` : ""}`);
+    router.push(catalogueHref(`/search${query ? `?${new URLSearchParams({ q: query })}` : ""}`, version));
   };
   const inputClass = "h-10 w-full rounded-full border border-white/10 bg-white/5 pl-4 pr-11 text-sm text-white placeholder:text-zinc-500 focus-visible:outline-2 focus-visible:outline-red-500";
   const inputProps = {
@@ -77,13 +81,13 @@ export function NavbarSearch() {
         if (controls.length > 1) { event.preventDefault(); controls[(index + (event.key === "ArrowDown" ? 1 : -1) + controls.length) % controls.length]?.focus(); }
       }
     }}>
-    <form role="search" action="/search" onSubmit={submit} className="relative hidden w-48 md:block xl:w-64">
+    <form role="search" action={catalogueHref("/search", version)} onSubmit={submit} className="relative hidden w-48 md:block xl:w-64">
       <input {...inputProps} />
       <button type="submit" aria-label="Search" className="absolute right-0 top-0 flex size-10 items-center justify-center rounded-full text-zinc-400 hover:text-white"><Search size={18} aria-hidden="true" /></button>
     </form>
     <button ref={mobileButton} type="button" aria-label="Open search" aria-expanded={mobile} onClick={() => setMobile((open) => !open)} className="flex size-11 items-center justify-center rounded-lg text-zinc-300 hover:bg-white/5 md:hidden"><Search size={21} /></button>
     {mobile && <div className="fixed inset-x-0 top-16 border-b border-white/10 bg-zinc-950 p-4 md:hidden">
-      <form role="search" action="/search" onSubmit={submit} className="flex items-center gap-2">
+      <form role="search" action={catalogueHref("/search", version)} onSubmit={submit} className="flex items-center gap-2">
         <input {...inputProps} ref={mobileInput} />
         <button type="button" aria-label="Close search" onClick={() => { close(); mobileButton.current?.focus(); }} className="flex size-11 shrink-0 items-center justify-center text-zinc-400"><X size={20} /></button>
       </form>

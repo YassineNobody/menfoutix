@@ -1,5 +1,8 @@
 "use client";
 
+import { catalogueHref } from "@/lib/catalogue";
+import { useCatalogueVersion } from "@/components/Catalogue/CatalogueProvider";
+
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Film, Search, SlidersHorizontal, X } from "lucide-react";
@@ -19,6 +22,7 @@ export function SearchResults({ result, filters, facets, hasCriteria }: {
   hasCriteria: boolean;
 }) {
   const router = useRouter();
+  const version = useCatalogueVersion();
   const searchParams = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -33,7 +37,7 @@ export function SearchResults({ result, filters, facets, hasCriteria }: {
   const navigate = (query: URLSearchParams, replace = false, scroll = false) => {
     params.current = query.toString();
     startTransition(() => {
-      const url = `/search${query.size ? `?${query}` : ""}`;
+      const url = catalogueHref(`/search${query.size ? `?${query}` : ""}`, version);
       if (replace) router.replace(url, { scroll });
       else router.push(url, { scroll });
     });

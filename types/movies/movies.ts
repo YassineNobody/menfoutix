@@ -1,5 +1,5 @@
 
-export type VideoVersion = "VO";
+export type VideoVersion = "VO" | "VF";
 export type Rating = 1 | 2 | 3 | 4 | 5;
 
 

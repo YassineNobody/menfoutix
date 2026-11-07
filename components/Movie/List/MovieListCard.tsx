@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Catalogue/CatalogueLink";
 import { Star } from "lucide-react";
 
 import type { WorkListItemResponse } from "@/types/work/work";

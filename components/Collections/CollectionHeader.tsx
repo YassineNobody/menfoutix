@@ -1,13 +1,15 @@
+import { catalogueText, type CatalogueVersion } from "@/lib/catalogue";
 import { CollectionDetails } from "@/types/collections/collections";
 import { CollectionImage } from "./CollectionImage";
 import { Calendar, Film } from "lucide-react";
 
 interface Props {
   collection: CollectionDetails;
+  version?: CatalogueVersion;
 }
-export function CollectionHeader({ collection }: Props) {
-  const title = collection.nameEn || collection.nameFr;
-  const synopsis = collection.synopsisEn || collection.synopsisFr;
+export function CollectionHeader({ collection, version = "VO" }: Props) {
+  const title = catalogueText(version, collection.nameFr, collection.nameEn);
+  const synopsis = catalogueText(version, collection.synopsisFr, collection.synopsisEn);
   const years = collection.movies
     .map((movie) => movie.releaseYear)
     .filter((year): year is number => year !== null);

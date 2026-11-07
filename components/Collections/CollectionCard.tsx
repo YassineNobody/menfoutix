@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/Catalogue/CatalogueLink";
 import { Library } from "lucide-react";
 import type { PreviewCollection } from "@/types/collections/collections";
 

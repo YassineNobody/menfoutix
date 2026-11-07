@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -39,7 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Navbar />
           </div>
           <main className="min-h-screen flex-1">{children}</main>
-          <Footer />
+          <Suspense fallback={null}><Footer /></Suspense>
         </div>
       </body>
     </html>

@@ -15,6 +15,7 @@ export const FilmsWithoutPlaylist = ({ films }: Props) => {
     .filter(
       (film) =>
         normalizeSearch(film.titleFr).includes(normalizeSearch(search.trim())) ||
+        normalizeSearch(film.titleEn || "").includes(normalizeSearch(search.trim())) ||
         String(film.id).includes(search),
     )
     .sort(
@@ -113,7 +114,7 @@ export const FilmsWithoutPlaylist = ({ films }: Props) => {
                     {String(index + 1).padStart(2, "0")}
                   </td>
                   <td className="id-cell">#{film.id}</td>
-                  <td className="title-cell">{film.titleFr}</td>
+                  <td className="title-cell">{film.titleFr}{film.titleEn && film.titleEn !== film.titleFr ? ` — ${film.titleEn}` : ""}</td>
                   <td>
                     <span
                       className={`version-badge ${film.version.toLowerCase()}`}

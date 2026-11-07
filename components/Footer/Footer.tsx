@@ -1,6 +1,13 @@
-import Link from "next/link";
+"use client";
 
-export const Footer = () => (
+import { usePathname } from "next/navigation";
+import { CatalogueProvider } from "@/components/Catalogue/CatalogueProvider";
+import { versionFromPath } from "@/lib/catalogue";
+import Link from "@/components/Catalogue/CatalogueLink";
+
+export const Footer = () => {
+  const version = versionFromPath(usePathname());
+  return (<CatalogueProvider version={version}>
   <footer className="relative z-10 mt-16 border-t border-white/10 bg-zinc-950/90 px-5 py-8 text-sm text-zinc-400 md:px-8">
     <div className="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
       <div>
@@ -38,4 +45,5 @@ export const Footer = () => (
       Données descriptives fournies par TMDB. Ce site n’est pas affilié à TMDB.
     </div>
   </footer>
-);
+  </CatalogueProvider>);
+};

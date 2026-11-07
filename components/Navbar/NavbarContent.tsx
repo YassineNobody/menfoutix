@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/Catalogue/CatalogueLink";
 import { usePathname } from "next/navigation";
 import { Suspense, useCallback, useEffect, useId, useRef, useState } from "react";
 import { Clapperboard, Menu, Search, Tv2, X, type LucideIcon } from "lucide-react";
@@ -31,7 +31,7 @@ function NavigationLink({ href, label, icon: Icon, mobile, onClick, active = fal
 }
 
 function ActiveNavigationLink(props: NavItemProps) {
-  const pathname = usePathname();
+  const pathname = usePathname().replace(/^\/vf(?=\/|$)/, "") || "/";
   const active = props.href === "/movies"
     ? ["/movies", "/movie/", "/genre/movie/", "/watch/movie/"].some((path) => pathname === path || pathname.startsWith(path.endsWith("/") ? path : `${path}/`))
     : props.href === "/tv-shows"

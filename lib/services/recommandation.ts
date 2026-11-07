@@ -1,3 +1,4 @@
+import { localizedTextSql, versionSql, type CatalogueVersion } from "@/lib/catalogue";
 import "server-only";
 import { db } from "../server/database";
 import { PaginatedResult } from "@/types/commons";
@@ -6,6 +7,7 @@ import { WorkListItemResponse, WorkRow } from "@/types/work/work";
 export function getRecommandationTmdbRating(
   page: number = 1,
   limit: number = 10,
+  version: CatalogueVersion = "VO",
 ): PaginatedResult<WorkListItemResponse> {
   if (!Number.isSafeInteger(page) || page < 1) {
     throw new Error("page doit être un entier positif.");
@@ -23,7 +25,7 @@ export function getRecommandationTmdbRating(
       WHERE w.type = 'film' AND EXISTS (
         SELECT 1
         FROM videos AS v
-        WHERE v.work_id = w.id AND v.version = 'VO'
+        WHERE v.work_id = w.id AND v.version = ${versionSql(version)}
       );
     `,
     )
@@ -43,12 +45,12 @@ export function getRecommandationTmdbRating(
         w.tmdb_id AS tmdbId,
         w.type,
         w.title_fr AS titleFr,
-        COALESCE(NULLIF(w.title_en,''),NULLIF(w.original_title,''),w.title_fr) AS displayTitle,
+        ${localizedTextSql(version, "w.title_fr", "w.title_en", "w.original_title")} AS displayTitle,
         w.title_en AS titleEn,
         w.original_title AS originalTitle,
         w.local_title AS localTitle,
         w.release_date AS releaseDate,
-        COALESCE(NULLIF(w.synopsis_en,''),w.synopsis_fr) AS synopsis,
+        ${localizedTextSql(version, "w.synopsis_fr", "w.synopsis_en")} AS synopsis,
         w.poster_url AS posterUrl,
         w.backdrop_url AS backdropUrl,
         w.logo_url AS logoUrl,
@@ -72,7 +74,7 @@ export function getRecommandationTmdbRating(
       WHERE EXISTS (
         SELECT 1
         FROM videos AS v
-        WHERE v.work_id = w.id AND v.version = 'VO'
+        WHERE v.work_id = w.id AND v.version = ${versionSql(version)}
       )
 
       ORDER BY w.tmdb_vote_average DESC, w.id DESC
@@ -100,6 +102,7 @@ export function getRecommandationTmdbRating(
 export function getMovieRecommendationsTmdbRating(
   page: number = 1,
   limit: number = 10,
+  version: CatalogueVersion = "VO",
 ): PaginatedResult<WorkListItemResponse> {
   if (!Number.isSafeInteger(page) || page < 1) {
     throw new Error("page doit être un entier positif.");
@@ -118,7 +121,7 @@ export function getMovieRecommendationsTmdbRating(
         AND EXISTS (
           SELECT 1
           FROM videos AS v
-          WHERE v.work_id = w.id AND v.version = 'VO'
+          WHERE v.work_id = w.id AND v.version = ${versionSql(version)}
         );
     `,
     )
@@ -138,12 +141,12 @@ export function getMovieRecommendationsTmdbRating(
         w.tmdb_id AS tmdbId,
         w.type,
         w.title_fr AS titleFr,
-        COALESCE(NULLIF(w.title_en,''),NULLIF(w.original_title,''),w.title_fr) AS displayTitle,
+        ${localizedTextSql(version, "w.title_fr", "w.title_en", "w.original_title")} AS displayTitle,
         w.title_en AS titleEn,
         w.original_title AS originalTitle,
         w.local_title AS localTitle,
         w.release_date AS releaseDate,
-        COALESCE(NULLIF(w.synopsis_en,''),w.synopsis_fr) AS synopsis,
+        ${localizedTextSql(version, "w.synopsis_fr", "w.synopsis_en")} AS synopsis,
         w.poster_url AS posterUrl,
         w.backdrop_url AS backdropUrl,
         w.logo_url AS logoUrl,
@@ -168,7 +171,7 @@ export function getMovieRecommendationsTmdbRating(
         AND EXISTS (
           SELECT 1
           FROM videos AS v
-          WHERE v.work_id = w.id AND v.version = 'VO'
+          WHERE v.work_id = w.id AND v.version = ${versionSql(version)}
         )
 
       ORDER BY w.tmdb_vote_average DESC, w.id DESC
@@ -196,6 +199,7 @@ export function getMovieRecommendationsTmdbRating(
 export function getRecentMoviesByRating(
   page: number = 1,
   limit: number = 10,
+  version: CatalogueVersion = "VO",
 ): PaginatedResult<WorkListItemResponse> {
   if (!Number.isSafeInteger(page) || page < 1) {
     throw new Error("page doit être un entier positif.");
@@ -214,7 +218,7 @@ export function getRecentMoviesByRating(
         AND EXISTS (
           SELECT 1
           FROM videos AS v
-          WHERE v.work_id = w.id AND v.version = 'VO'
+          WHERE v.work_id = w.id AND v.version = ${versionSql(version)}
         );
     `,
     )
@@ -233,12 +237,12 @@ export function getRecentMoviesByRating(
         w.tmdb_id AS tmdbId,
         w.type,
         w.title_fr AS titleFr,
-        COALESCE(NULLIF(w.title_en,''),NULLIF(w.original_title,''),w.title_fr) AS displayTitle,
+        ${localizedTextSql(version, "w.title_fr", "w.title_en", "w.original_title")} AS displayTitle,
         w.title_en AS titleEn,
         w.original_title AS originalTitle,
         w.local_title AS localTitle,
         w.release_date AS releaseDate,
-        COALESCE(NULLIF(w.synopsis_en,''),w.synopsis_fr) AS synopsis,
+        ${localizedTextSql(version, "w.synopsis_fr", "w.synopsis_en")} AS synopsis,
         w.poster_url AS posterUrl,
         w.backdrop_url AS backdropUrl,
         w.logo_url AS logoUrl,
@@ -263,7 +267,7 @@ export function getRecentMoviesByRating(
         AND EXISTS (
           SELECT 1
           FROM videos AS v
-          WHERE v.work_id = w.id AND v.version = 'VO'
+          WHERE v.work_id = w.id AND v.version = ${versionSql(version)}
         )
 
       ORDER BY
@@ -295,6 +299,7 @@ export function getRecentMoviesByRating(
 export function getRecentSeriesByRating(
   page: number = 1,
   limit: number = 10,
+  version: CatalogueVersion = "VO",
 ): PaginatedResult<WorkListItemResponse> {
   if (!Number.isSafeInteger(page) || page < 1) {
     throw new Error("page doit être un entier positif.");
@@ -313,7 +318,7 @@ export function getRecentSeriesByRating(
           SELECT 1
           FROM videos AS v
           WHERE v.work_id = w.id
-            AND v.version = 'VO'
+            AND v.version = ${versionSql(version)}
         );
     `)
     .get() as { total: number };
@@ -329,16 +334,12 @@ export function getRecentSeriesByRating(
         w.tmdb_id AS tmdbId,
         w.type,
         w.title_fr AS titleFr,
-        COALESCE(
-          NULLIF(w.title_en, ''),
-          NULLIF(w.original_title, ''),
-          w.title_fr
-        ) AS displayTitle,
+        ${localizedTextSql(version, "w.title_fr", "w.title_en", "w.original_title")} AS displayTitle,
         w.title_en AS titleEn,
         w.original_title AS originalTitle,
         w.local_title AS localTitle,
         w.release_date AS releaseDate,
-        COALESCE(NULLIF(w.synopsis_en, ''), w.synopsis_fr) AS synopsis,
+        ${localizedTextSql(version, "w.synopsis_fr", "w.synopsis_en")} AS synopsis,
         w.poster_url AS posterUrl,
         w.backdrop_url AS backdropUrl,
         w.logo_url AS logoUrl,
@@ -364,7 +365,7 @@ export function getRecentSeriesByRating(
           SELECT 1
           FROM videos AS v
           WHERE v.work_id = w.id
-            AND v.version = 'VO'
+            AND v.version = ${versionSql(version)}
         )
 
       ORDER BY

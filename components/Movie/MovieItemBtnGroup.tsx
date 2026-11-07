@@ -1,6 +1,6 @@
 import { Play } from "lucide-react";
 import type { MovieResponse } from "@/types/movies/movies";
-import Link from "next/link";
+import Link from "@/components/Catalogue/CatalogueLink";
 import { YoutubeIcon } from "../Icon/YouTube";
 export const MovieItemBtnGroup = ({ movie, }: {
     movie: MovieResponse;
@@ -8,7 +8,7 @@ export const MovieItemBtnGroup = ({ movie, }: {
     const video = movie.videos[0];
     if (!video) {
         return (<div role="status" className="w-full rounded-lg border border-white/10 bg-zinc-900/80 px-4 py-5 text-center text-sm text-zinc-400">
-        {"This movie is not available in the original version yet."}
+        {"This movie is not available in this version yet."}
       </div>);
     }
     return (<div className="flex flex-wrap gap-3 w-full min-w-0">

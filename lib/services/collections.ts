@@ -1,3 +1,4 @@
+import { versionSql, type CatalogueVersion } from "@/lib/catalogue";
 import {
   CollectionDetails,
   CollectionMovieRow,
@@ -71,6 +72,7 @@ export function getPreviewCollectionsVo(
   page: number = 1,
   limit: number = 12,
   query: string = "",
+  version: CatalogueVersion = "VO",
 ): PaginatedResult<PreviewCollection> {
   if (!Number.isSafeInteger(page) || page < 1) {
     throw new RangeError("La page doit être un entier supérieur ou égal à 1.");
@@ -96,7 +98,7 @@ export function getPreviewCollectionsVo(
         FROM collection_movies cm
         JOIN videos v ON v.work_id = cm.work_id
         WHERE cm.collection_id = c.id
-          AND v.version = 'VO'
+          AND v.version = ${versionSql(version)}
       )
       AND (? = ''
         OR instr(normalize_search(c.name_fr), normalize_search(?)) > 0
